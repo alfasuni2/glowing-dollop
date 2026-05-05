@@ -1,6 +1,7 @@
 *.html
 ads.txt
 
+.vs
 **/_out/*
 **/.vscode/*
 .DS_Store
@@ -11,6 +12,8 @@ ebook/*.epub
 
 convert.py
 
+attachments/out/**
+attachments/.vs/**
 attachments/build/**
 attachments/android/.gradle/**
 attachments/android/.idea

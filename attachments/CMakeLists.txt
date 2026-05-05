@@ -14,7 +14,7 @@ endif()
 
 find_package (glfw3 REQUIRED)
 find_package (glm REQUIRED)
-find_package (Vulkan 1.4.335 REQUIRED)      # Require Vulkan SDK version 1.4.335 or higher
+find_package (Vulkan 1.4 REQUIRED)      # Require Vulkan SDK version 1.4.335 or higher, using Vulkan 1.4 to make it more lenient.
 find_package (tinyobjloader REQUIRED)
 find_package (tinygltf REQUIRED)
 find_package (KTX REQUIRED)

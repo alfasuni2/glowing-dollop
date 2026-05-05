@@ -42,8 +42,8 @@ import vulkan_hpp;
 #define LAB_TASK_INSTANCE_LUT 9
 #define LAB_TASK_REFLECTIONS 11
 
-constexpr uint32_t WIDTH                = 800;
-constexpr uint32_t HEIGHT               = 600;
+constexpr uint32_t WIDTH                = 2560;
+constexpr uint32_t HEIGHT               = 1440;
 const std::string  MODEL_PATH           = "models/plant_on_table.obj";
 constexpr int      MAX_FRAMES_IN_FLIGHT = 2;
 

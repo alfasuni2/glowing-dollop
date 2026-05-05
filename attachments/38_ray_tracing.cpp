@@ -33,7 +33,7 @@ import vulkan_hpp;
 #include <tiny_obj_loader.h>
 
 #ifndef LAB_TASK_LEVEL
-#	define LAB_TASK_LEVEL 1
+#	define LAB_TASK_LEVEL 6
 #endif
 
 #define LAB_TASK_AS_BUILD_AND_BIND 4
@@ -1739,10 +1739,10 @@ class VulkanRaytracingApplication
 	void updateTopLevelAS(const glm::mat4 &model)
 	{
 		vk::TransformMatrixKHR tm{};
-		auto                  &M = model;
-		tm.matrix                = std::array<std::array<float, 4>, 3>{{std::array<float, 4>{M[0][0], M[1][0], M[2][0], M[3][0]},
-		                                                                std::array<float, 4>{M[0][1], M[1][1], M[2][1], M[3][1]},
-		                                                                std::array<float, 4>{M[0][2], M[1][2], M[2][2], M[3][2]}}};
+		auto &M		= model;
+		tm.matrix   = std::array<std::array<float, 4>, 3>{{std::array<float, 4>{M[0][0], M[1][0], M[2][0], M[3][0]},
+		                                                   std::array<float, 4>{M[0][1], M[1][1], M[2][1], M[3][1]},
+		                                                   std::array<float, 4>{M[0][2], M[1][2], M[2][2], M[3][2]}}};
 
 		// TASK06: update the instances to use the new transform matrix.
 		for (auto &instance : instances)

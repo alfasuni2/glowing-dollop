@@ -33,7 +33,7 @@ import vulkan_hpp;
 #include <tiny_obj_loader.h>
 
 #ifndef LAB_TASK_LEVEL
-#	define LAB_TASK_LEVEL 6
+#	define LAB_TASK_LEVEL 11
 #endif
 
 #define LAB_TASK_AS_BUILD_AND_BIND 4
@@ -44,7 +44,7 @@ import vulkan_hpp;
 
 constexpr uint32_t WIDTH                = 2560;
 constexpr uint32_t HEIGHT               = 1440;
-const std::string  MODEL_PATH           = "models/plant_on_table.obj";
+const std::string  MODEL_PATH           = "models/plant_on_table.obj"; 
 constexpr int      MAX_FRAMES_IN_FLIGHT = 2;
 
 const std::vector<char const *> validationLayers = {

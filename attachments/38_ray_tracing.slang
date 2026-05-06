@@ -59,8 +59,10 @@ SamplerState textureSampler;
 [[vk::binding(1,1)]]
 Texture2D<float4> textures[];
 
+// TASK11
 struct PushConstant {
     uint materialIndex;
+    uint reflective;
 };
 [push_constant]
 PushConstant pc;
@@ -71,12 +73,71 @@ static const float3 lightDir = float3(-6.0, 0.0, 6.0);
 static const float EPSILON = 0.01;
 
 float2 intersection_uv(uint instanceID, uint primIndex, float2 barycentrics) {
-    // TASK10
-    return float2(0.0, 0.0);
+    uint indexOffset = instanceLUTBuffer[NonUniformResourceIndex(instanceID)].indexBufferOffset;
+
+    uint i0 = indexBuffer[indexOffset + (primIndex * 3 + 0)];
+    uint i1 = indexBuffer[indexOffset + (primIndex * 3 + 1)];
+    uint i2 = indexBuffer[indexOffset + (primIndex * 3 + 2)];
+
+    float2 uv0 = uvBuffer[i0];
+    float2 uv1 = uvBuffer[i1];
+    float2 uv2 = uvBuffer[i2];
+
+    float w0 = 1.0 - barycentrics.x - barycentrics.y;
+    float w1 = barycentrics.x;
+    float w2 = barycentrics.y;
+
+    return w0 * uv0 + w1 * uv1 + w2 * uv2;
 }
 
 void apply_reflection(float3 P, float3 N, inout float4 baseColor) {
     // TASK11
+    // Build the reflections ray
+    float3 V = normalize(ubo.cameraPos - P);
+    float3 R = reflect(-V, N);    
+
+    RayDesc reflectionRayDesc;
+    reflectionRayDesc.Origin = P;
+    reflectionRayDesc.Direction = R;
+    reflectionRayDesc.TMin = EPSILON;
+    reflectionRayDesc.TMax = 1e4;
+
+    // Initialize a ray query for reflections
+    RayQuery<RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES> rq;
+    let rayFlags = RAY_FLAG_SKIP_PROCEDURAL_PRIMITIVES;
+    rq.TraceRayInline(accelerationStructure, rayFlags, 0xFF, reflectionRayDesc);
+
+    while (rq.Proceed()) {
+        uint instanceID = rq.CandidateRayInstanceCustomIndex();
+        uint primIndex  = rq.CandidatePrimitiveIndex();
+
+        float2 uv = intersection_uv(instanceID, primIndex, rq.CandidateTriangleBarycentrics());
+
+        uint materialID = instanceLUTBuffer[NonUniformResourceIndex(instanceID)].materialID;
+        float4 intersectionColor = textures[NonUniformResourceIndex(materialID)].SampleLevel(textureSampler, uv, 0);
+
+        if (intersectionColor.a < 0.5) {
+            // If the triangle is transparent, we continue to trace
+            // to find the next opaque triangle.
+        } else {
+            // If we hit an opaque triangle, we stop tracing.
+            rq.CommitNonOpaqueTriangleHit();
+        }
+    }
+
+    bool hit = (rq.CommittedStatus() == COMMITTED_TRIANGLE_HIT);
+
+    if (hit) {
+        uint instanceID = rq.CommittedRayInstanceCustomIndex();
+        uint primIndex  = rq.CommittedPrimitiveIndex();
+
+        float2 uv = intersection_uv(instanceID, primIndex, rq.CommittedTriangleBarycentrics());
+
+        uint materialID = instanceLUTBuffer[NonUniformResourceIndex(instanceID)].materialID;
+        float4 intersectionColor = textures[NonUniformResourceIndex(materialID)].SampleLevel(textureSampler, uv, 0);
+
+        baseColor.rgb = lerp(baseColor.rgb, intersectionColor.rgb, 0.7);
+    }
 }
 
 // TASK05: Implement ray query shadows
@@ -127,6 +188,11 @@ float4 fragMain(VSOutput vertIn) : SV_TARGET {
    if (baseColor.a < 0.5) discard;
 
    float3 P = vertIn.worldPos;
+   float3 N = vertIn.fragNormal;
+
+   if (pc.reflective > 0) {
+       apply_reflection(P, N, baseColor);
+   }
 
    bool inShadow = in_shadow(P);
 
